@@ -145,25 +145,28 @@ export function FormPage({ token, onBack }) {
                 </Section>
 
                 <Section title={t.section_texts}>
-                    <BilingualTextField
+                    <p className="text-xs text-slate-500 -mt-2">
+                        {lang === 'nl'
+                            ? 'Schrijf in het Nederlands — ons marketingteam verzorgt de Engelse vertaling.'
+                            : 'Write in English — our marketing team will create the Dutch translation.'}
+                    </p>
+                    <MonoTextField
                         label={t.korte_tekst}
-                        nlValue={submission.korte_tekst_nl || ''}
-                        enValue={submission.korte_tekst_en || ''}
-                        onChangeNl={(v) => onChange({ korte_tekst_nl: v })}
-                        onChangeEn={(v) => onChange({ korte_tekst_en: v })}
+                        value={lang === 'nl' ? (submission.korte_tekst_nl || '') : (submission.korte_tekst_en || '')}
+                        onChange={(v) => onChange(lang === 'nl' ? { korte_tekst_nl: v } : { korte_tekst_en: v })}
                         rows={5}
                         t={t}
                         examplesKey="short"
+                        lang={lang}
                     />
-                    <BilingualTextField
+                    <MonoTextField
                         label={t.bio}
-                        nlValue={submission.bio_nl || ''}
-                        enValue={submission.bio_en || ''}
-                        onChangeNl={(v) => onChange({ bio_nl: v })}
-                        onChangeEn={(v) => onChange({ bio_en: v })}
+                        value={lang === 'nl' ? (submission.bio_nl || '') : (submission.bio_en || '')}
+                        onChange={(v) => onChange(lang === 'nl' ? { bio_nl: v } : { bio_en: v })}
                         rows={8}
                         t={t}
                         examplesKey="bio"
+                        lang={lang}
                     />
                 </Section>
 
@@ -309,21 +312,13 @@ function KeywordsInput({ value, onChange, t }) {
     );
 }
 
-function BilingualTextField({ label, nlValue, enValue, onChangeNl, onChangeEn, rows = 5, t, examplesKey }) {
+function MonoTextField({ label, value, onChange, rows = 5, t, examplesKey, lang }) {
     const [showExamples, setShowExamples] = useState(false);
+    const examples = EXAMPLES[examplesKey][lang] || EXAMPLES[examplesKey].nl;
     return (
         <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{label}<span className="text-red-500 ml-1">*</span></label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                    <label className="block text-xs text-slate-500 mb-1">{t.nl_version}</label>
-                    <textarea value={nlValue} onChange={(e) => onChangeNl(e.target.value)} className={inputCls} rows={rows} />
-                </div>
-                <div>
-                    <label className="block text-xs text-slate-500 mb-1">{t.en_version}</label>
-                    <textarea value={enValue} onChange={(e) => onChangeEn(e.target.value)} className={inputCls} rows={rows} />
-                </div>
-            </div>
+            <textarea value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} rows={rows} />
             <button
                 type="button"
                 onClick={() => setShowExamples(s => !s)}
@@ -332,19 +327,10 @@ function BilingualTextField({ label, nlValue, enValue, onChangeNl, onChangeEn, r
                 {showExamples ? '▲' : '▼'} {examplesKey === 'short' ? t.example_short : t.example_bio}
             </button>
             {showExamples && (
-                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-slate-50 border border-slate-200 rounded p-3 space-y-2">
-                        <div className="text-[10px] uppercase text-slate-500">NL</div>
-                        {EXAMPLES[examplesKey].nl.map((ex, i) => (
-                            <p key={i} className="text-xs text-slate-600 italic">{ex}</p>
-                        ))}
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200 rounded p-3 space-y-2">
-                        <div className="text-[10px] uppercase text-slate-500">EN</div>
-                        {EXAMPLES[examplesKey].en.map((ex, i) => (
-                            <p key={i} className="text-xs text-slate-600 italic">{ex}</p>
-                        ))}
-                    </div>
+                <div className="mt-2 bg-slate-50 border border-slate-200 rounded p-3 space-y-2">
+                    {examples.map((ex, i) => (
+                        <p key={i} className="text-xs text-slate-600 italic">{ex}</p>
+                    ))}
                 </div>
             )}
         </div>
