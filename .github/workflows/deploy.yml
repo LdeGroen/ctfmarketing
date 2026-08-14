@@ -1,4 +1,4 @@
-name: Deploy to Plesk
+name: Deploy
 
 on:
   push:
@@ -26,30 +26,6 @@ jobs:
           # We tonen warnings in CI maar laten de build niet falen erop.
           CI: false
 
-      - name: Deploy build/ via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          protocol: ftps
-          security: loose
-          timeout: 60000
-          local-dir: ./build/
-          state-name: .ftp-deploy-sync-state.json
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/src/**
-
-      # Tijdelijk ook naar de nieuwe server (migratie weg van Protagonist,
-      # augustus 2026). Zolang de DNS nog naar Plesk wijst is dit een
-      # schaduwkopie: de site blijft draaien waar hij draait, maar de nieuwe
-      # server heeft altijd dezelfde inhoud. Na het omschakelen vervalt de
-      # Plesk-stap hierboven en blijft alleen deze over.
       - name: Ook naar de nieuwe server (rsync over SSH)
         if: always()
         env:
