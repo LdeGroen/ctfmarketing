@@ -25,6 +25,10 @@ jobs:
           # CRA promoveert lint-warnings naar errors als CI=true (GitHub default).
           # We tonen warnings in CI maar laten de build niet falen erop.
           CI: false
+          # De source map werd publiek meegeleverd: de volledige leesbare
+          # broncode van een intern systeem, zonder inloggen op te halen.
+          # Scheelt bovendien ongeveer een derde van de bouwtijd.
+          GENERATE_SOURCEMAP: false
 
       - name: Ook naar de nieuwe server (rsync over SSH)
         if: always()
