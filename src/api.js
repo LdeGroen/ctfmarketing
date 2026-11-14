@@ -23,6 +23,7 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ language: lang }),
     }),
+    deadlines: () => request('/api/marketing/public/deadlines'),
     get: (token) => request(`/api/marketing/public/submissions/${token}`),
     update: (token, patch) => request(`/api/marketing/public/submissions/${token}`, {
         method: 'PUT',

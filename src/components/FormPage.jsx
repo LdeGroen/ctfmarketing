@@ -4,6 +4,14 @@ import { api } from '../api';
 import { UI, EXAMPLES } from '../i18n';
 import { useAutosave } from '../useAutosave';
 
+// Een kale datum (2026-11-27) als "27 november 2026" / "27 November 2026".
+export const datumTekst = (iso, lang) => {
+    if (!iso) return '';
+    const d = new Date(`${iso}T12:00:00`);
+    return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+export const vul = (tekst, datum) => tekst.replace('{datum}', datum);
+
 const inputCls = "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9f4493]";
 
 export function FormPage({ token, onBack }) {
@@ -12,6 +20,8 @@ export function FormPage({ token, onBack }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    // Na het insturen opnieuw openen om aan te passen (14-11-2026).
+    const [bewerken, setBewerken] = useState(false);
 
     const t = UI[lang];
 
@@ -80,8 +90,17 @@ export function FormPage({ token, onBack }) {
         );
     }
 
-    if (submission.status !== 'draft') {
-        return <SubmittedScreen lang={lang} setLang={setLang} />;
+    const tot = datumTekst(submission.deadline_aanpassen, lang);
+    const naInsturen = submission.status !== 'draft';
+    if (naInsturen && !(bewerken && submission.aanpasbaar)) {
+        return (
+            <SubmittedScreen
+                lang={lang}
+                setLang={setLang}
+                aanpassen={submission.aanpasbaar ? () => { setBewerken(true); window.scrollTo(0, 0); } : null}
+                tot={tot}
+            />
+        );
     }
 
     const handleSubmit = async () => {
@@ -99,7 +118,7 @@ export function FormPage({ token, onBack }) {
             alert((lang === 'nl' ? 'Vul/lever eerst: ' : 'Please fill/provide first: ') + '\n• ' + errs.join('\n• '));
             return;
         }
-        if (!window.confirm(t.submit_confirm)) return;
+        if (!window.confirm(tot ? vul(t.submit_confirm_tot, tot) : t.submit_confirm)) return;
         setSubmitting(true);
         try {
             await flush();
@@ -115,6 +134,16 @@ export function FormPage({ token, onBack }) {
             <Header lang={lang} setLang={setLang} t={t} saveStatus={saveStatus} />
 
             <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8 space-y-6">
+                {naInsturen ? (
+                    <div className="bg-green-50 border border-green-200 text-green-900 rounded-2xl p-4 text-sm">
+                        {t.bewerk_banner.replace('{tot}', tot ? vul(t.bewerk_tot, tot) : '')}
+                    </div>
+                ) : (submission.deadline || tot) && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 text-sm space-y-1">
+                        {submission.deadline && <p className="font-semibold">{vul(t.deadline, datumTekst(submission.deadline, lang))}</p>}
+                        {tot && <p>{vul(t.deadline_aanpassen, tot)}</p>}
+                    </div>
+                )}
                 <CopyLinkBar token={token} lang={lang} t={t} />
 
                 <Section title={t.section_basics}>
@@ -192,6 +221,14 @@ export function FormPage({ token, onBack }) {
                 </Section>
 
                 <div className="flex justify-end pt-4">
+                    {naInsturen ? (
+                        <button
+                            onClick={async () => { await flush(); setBewerken(false); window.scrollTo(0, 0); }}
+                            className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-semibold"
+                        >
+                            <Check size={18} /> {t.klaar}
+                        </button>
+                    ) : (
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
@@ -199,6 +236,7 @@ export function FormPage({ token, onBack }) {
                     >
                         <Check size={18} /> {submitting ? '…' : t.submit}
                     </button>
+                    )}
                 </div>
             </main>
         </div>
@@ -520,7 +558,7 @@ function SocialsInput({ socials, onChange, t }) {
     );
 }
 
-function SubmittedScreen({ lang, setLang }) {
+function SubmittedScreen({ lang, setLang, aanpassen, tot }) {
     const t = UI[lang];
     return (
         <div className="min-h-screen flex flex-col">
@@ -534,6 +572,14 @@ function SubmittedScreen({ lang, setLang }) {
                     <CheckCircle2 size={48} className="mx-auto text-green-600 mb-4" />
                     <h1 className="text-3xl font-bold mb-3">{t.submitted_title}</h1>
                     <p className="text-slate-600">{t.submitted_body}</p>
+                    {aanpassen && (
+                        <div className="mt-6 pt-6 border-t border-slate-200">
+                            <p className="text-sm text-slate-600 mb-3">{tot ? vul(t.submitted_aanpassen, tot) : t.submitted_aanpassen_zonder}</p>
+                            <button onClick={aanpassen} className="px-5 py-2 bg-[#9f4493] hover:bg-[#7e3573] text-white rounded-full font-semibold text-sm">
+                                {t.aanpassen_knop}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

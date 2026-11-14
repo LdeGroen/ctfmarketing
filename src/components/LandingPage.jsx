@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Megaphone, ArrowRight, Globe } from 'lucide-react';
 import { api } from '../api';
 import { UI } from '../i18n';
+import { datumTekst, vul } from './FormPage';
 
 export function LandingPage({ onStart }) {
     const [lang, setLang] = useState('nl');
     const [tokenInput, setTokenInput] = useState('');
     const [starting, setStarting] = useState(false);
     const [error, setError] = useState(null);
+    const [deadlines, setDeadlines] = useState(null);
     const t = UI[lang];
+
+    useEffect(() => { api.deadlines().then(setDeadlines).catch(() => {}); }, []);
 
     const startNew = async () => {
         setStarting(true);
@@ -47,6 +51,12 @@ export function LandingPage({ onStart }) {
                     <p className="text-slate-500 mb-8">{t.subtitle}</p>
 
                     <p className="text-slate-700 mb-8">{t.landing_intro}</p>
+                    {(deadlines?.deadline || deadlines?.deadline_aanpassen) && (
+                        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-sm mb-8 space-y-1">
+                            {deadlines.deadline && <p className="font-semibold">{vul(t.deadline, datumTekst(deadlines.deadline, lang))}</p>}
+                            {deadlines.deadline_aanpassen && <p>{vul(t.deadline_aanpassen, datumTekst(deadlines.deadline_aanpassen, lang))}</p>}
+                        </div>
+                    )}
 
                     <button
                         onClick={startNew}
