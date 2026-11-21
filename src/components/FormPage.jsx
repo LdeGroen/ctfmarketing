@@ -223,7 +223,7 @@ export function FormPage({ token, onBack }) {
                 <div className="flex justify-end pt-4">
                     {naInsturen ? (
                         <button
-                            onClick={async () => { await flush(); setBewerken(false); window.scrollTo(0, 0); }}
+                            onClick={async () => { await flush().catch(() => {}); setBewerken(false); window.scrollTo(0, 0); }}
                             className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-semibold"
                         >
                             <Check size={18} /> {t.klaar}
