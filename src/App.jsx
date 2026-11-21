@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { FormPage } from './components/FormPage';
 import { CheckPage } from './components/CheckPage';
+import { pincode } from './api';
 
 // Path-based routing:
 //   /                            → landing
@@ -33,6 +34,11 @@ export default function App() {
         setRoute({ name: 'form', token });
     };
 
+    const navigateToCheck = (token) => {
+        window.history.pushState({}, '', `/check/${token}`);
+        setRoute({ name: 'check', token });
+    };
+
     const navigateToLanding = () => {
         window.history.pushState({}, '', '/');
         setRoute({ name: 'landing' });
@@ -40,7 +46,15 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800">
-            {route.name === 'landing' && <LandingPage onStart={navigateToForm} />}
+            {/* Ingelogd met de pincode: altijd terug naar je voorstellingen. */}
+            {route.name !== 'landing' && pincode.lees() && (
+                <div className="bg-[#7e3573] text-white text-sm">
+                    <div className="max-w-3xl mx-auto px-4 py-2">
+                        <button onClick={navigateToLanding} className="hover:underline">← Mijn voorstellingen / My performances</button>
+                    </div>
+                </div>
+            )}
+            {route.name === 'landing' && <LandingPage onStart={navigateToForm} onCheck={navigateToCheck} />}
             {route.name === 'form' && <FormPage token={route.token} onBack={navigateToLanding} />}
             {route.name === 'check' && <CheckPage token={route.token} />}
         </div>
