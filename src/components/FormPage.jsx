@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Check, CheckCircle2, Globe, AlertTriangle, Copy, Upload, Trash2, Plus, FileImage, Link as LinkIcon } from 'lucide-react';
-import { api, pincode } from '../api';
+import { api, sessie } from '../api';
 import { UI, EXAMPLES } from '../i18n';
 import { useAutosave } from '../useAutosave';
 
@@ -145,7 +145,7 @@ export function FormPage({ token, onBack }) {
                     </div>
                 )}
                 {/* Met de pincode kom je zo terug; de link bewaren hoeft dan niet. */}
-                {!pincode.lees() && <CopyLinkBar token={token} lang={lang} t={t} />}
+                {!sessie.lees() && <CopyLinkBar token={token} lang={lang} t={t} />}
 
                 <Section title={t.section_basics}>
                     <Field label={t.gezelschap} required>

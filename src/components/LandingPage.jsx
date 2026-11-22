@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Megaphone, ArrowRight, Globe, LogOut } from 'lucide-react';
-import { api, pincode } from '../api';
+import { api, sessie } from '../api';
 import { UI } from '../i18n';
 import { datumTekst, vul } from './FormPage';
 
@@ -17,17 +17,17 @@ export function LandingPage({ onStart, onCheck }) {
     const [deadlines, setDeadlines] = useState(null);
     const [pin, setPin] = useState('');
     const [mijn, setMijn] = useState(null);
-    const [laden, setLaden] = useState(() => !!pincode.lees());
+    const [laden, setLaden] = useState(() => !!sessie.lees());
     const t = UI[lang];
 
     useEffect(() => { api.deadlines().then(setDeadlines).catch(() => {}); }, []);
 
     // Nog ingelogd van de vorige keer? Dan meteen het overzicht.
     useEffect(() => {
-        if (!pincode.lees()) return;
+        if (!sessie.lees()) return;
         api.mijn()
             .then((r) => { setMijn(r); setLang(r.company?.voertaal || 'nl'); })
-            .catch((e) => { if (e.status === 401) pincode.weg(); })
+            .catch((e) => { if (e.status === 401) sessie.weg(); })
             .finally(() => setLaden(false));
     }, []);
 
@@ -39,7 +39,7 @@ export function LandingPage({ onStart, onCheck }) {
         setError(null);
         try {
             const r = await api.login(p);
-            pincode.zet(p);
+            sessie.zet(r.sessie);
             setMijn(r);
             setLang(r.company?.voertaal || lang);
             setPin('');
@@ -50,7 +50,10 @@ export function LandingPage({ onStart, onCheck }) {
         }
     };
 
-    const uitloggen = () => { pincode.weg(); setMijn(null); };
+    const uitloggen = () => {
+        api.logout().catch(() => { /* toch vergeten */ }).finally(sessie.weg);
+        setMijn(null);
+    };
 
     const openVoorstelling = useCallback(async (v) => {
         const s = v.inzendingen?.[0];

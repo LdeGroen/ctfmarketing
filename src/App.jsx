@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { FormPage } from './components/FormPage';
 import { CheckPage } from './components/CheckPage';
-import { pincode } from './api';
+import { sessie } from './api';
 
 // Path-based routing:
 //   /                            → landing
@@ -47,7 +47,7 @@ export default function App() {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800">
             {/* Ingelogd met de pincode: altijd terug naar je voorstellingen. */}
-            {route.name !== 'landing' && pincode.lees() && (
+            {route.name !== 'landing' && sessie.lees() && (
                 <div className="bg-[#7e3573] text-white text-sm">
                     <div className="max-w-3xl mx-auto px-4 py-2">
                         <button onClick={navigateToLanding} className="hover:underline">← Mijn voorstellingen / My performances</button>
