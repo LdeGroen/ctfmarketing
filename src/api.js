@@ -1,3 +1,4 @@
+import { maakRequest } from 'ctf-ui/formulier';
 export const API_URL = import.meta.env.VITE_API_URL || 'https://backend.cafetheaterfestival.nl';
 
 // Inloggen met de pincode van het gezelschap (21-11-2026), dezelfde als in de
@@ -37,23 +38,8 @@ function authHeaders() {
     return pin ? { 'X-Artist-Pincode': pin } : {};
 }
 
-async function request(path, options = {}) {
-    const headers = { Accept: 'application/json', ...(options.anoniem ? {} : authHeaders()), ...(options.headers || {}) };
-    if (options.body && !(options.body instanceof FormData) && !headers['Content-Type']) {
-        headers['Content-Type'] = 'application/json';
-    }
-    const res = await fetch(`${API_URL}${path}`, { ...options, headers });
-    if (res.status === 204) return null;
-    const ct = res.headers.get('content-type') || '';
-    const body = ct.includes('application/json') ? await res.json() : await res.text();
-    if (!res.ok) {
-        const err = new Error(body?.message || `HTTP ${res.status}`);
-        err.status = res.status;
-        err.body = body;
-        throw err;
-    }
-    return body;
-}
+// Het verzoek zelf komt uit ctf-ui (audit FRM-13, 23-11-2026).
+const request = maakRequest(API_URL, { kop: authHeaders });
 
 export const api = {
     start: (lang = 'nl') => request('/api/marketing/public/start', {

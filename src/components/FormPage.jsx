@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Check, CheckCircle2, Globe, AlertTriangle, Copy, Upload, Trash2, Plus, FileImage, Link as LinkIcon } from 'lucide-react';
 import { api, sessie } from '../api';
 import { UI, EXAMPLES } from '../i18n';
-import { useAutosave } from '../useAutosave';
+import { useAutosave } from 'ctf-ui/formulier';
 
 // Een kale datum (2026-11-27) als "27 november 2026" / "27 November 2026".
 export const datumTekst = (iso, lang) => {
